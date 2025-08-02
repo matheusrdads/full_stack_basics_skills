@@ -1,9 +1,7 @@
-// src/components/PaginationApp.tsx
 'use client';
 
 import React, { useState, useEffect } from 'react';
 import MainSideBar from '@/components/MainSideBar';
-import { useSearch } from '@/context/SearchContext';
 
 // Define the type for our data items
 interface Post {
@@ -21,14 +19,16 @@ const PaginationApp = () => {
   const [totalItems, setTotalItems] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [filters, setFilters] = useState({
+    id: '',
+    title: '',
+    body: '',
+  });
 
-  // Use the search context to get the shared state and handler
-  const { filters, handleSearch } = useSearch();
-
-  // Reset to the first page whenever the filters change
-  useEffect(() => {
+  const handleSearch = (newFilters: { id: string; title: string; body: string }) => {
+    setFilters(newFilters);
     setCurrentPage(1);
-  }, [filters]);
+  };
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -116,7 +116,7 @@ const PaginationApp = () => {
     });
 
     return (
-      <div className="flex flex-wrap justify-center items-center gap-1">
+      <>
         {buttonsToRender.map((page, index) => {
           if (page === '...') {
             return (
@@ -128,7 +128,7 @@ const PaginationApp = () => {
           return (
             <button
               key={page}
-              className={`px-3 py-1 border border-gray-300 rounded-md text-sm disabled:opacity-50 ${page === currentPage ? 'bg-blue-600 text-white font-semibold border-blue-600' : 'bg-gray-100 hover:bg-gray-200'}`}
+              className={`px-4 py-2 border border-gray-300 rounded-md disabled:opacity-50 ${page === currentPage ? 'bg-blue-600 text-white font-semibold border-blue-600' : 'bg-gray-100 hover:bg-gray-200'}`}
               onClick={() => handlePageChange(Number(page))}
               disabled={page === currentPage}
             >
@@ -136,31 +136,33 @@ const PaginationApp = () => {
             </button>
           );
         })}
-      </div>
+      </>
     );
   };
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-[250px_1fr] min-h-screen">
-      <MainSideBar />
+      {/* The sidebar component */}
+      {/* <MainSideBar onSearch={handleSearch} /> */}
+
+      {/* Main content area */}
       <div className="p-6">
         <h1 className="text-2xl font-bold mb-4">Modern Pagination App</h1>
+
         {isLoading && <p>Loading posts...</p>}
         {error && <p className="text-red-500 font-bold">Error: {error}</p>}
+        
         {!isLoading && !error && (
           <>
             <ul className="space-y-4">
-              {posts && posts.length > 0 ? (
-                posts.map((post) => (
-                  <li key={post.id} className="p-4 border border-gray-200 rounded-lg">
-                    <h3 className="text-lg font-semibold">{post.title}</h3>
-                    <p className="text-gray-600">{post.body}</p>
-                  </li>
-                ))
-              ) : (
-                <p>No posts found.</p>
-              )}
+              {posts.map((post) => (
+                <li key={post.id} className="p-4 border border-gray-200 rounded-lg">
+                  <h3 className="text-lg font-semibold">{post.title}</h3>
+                  <p className="text-gray-600">{post.body}</p>
+                </li>
+              ))}
             </ul>
+            
             <div className="flex justify-center items-center mt-6 space-x-2">
               <button
                 onClick={() => handlePageChange(currentPage - 1)}
@@ -178,6 +180,7 @@ const PaginationApp = () => {
                 Next
               </button>
             </div>
+
             <p className="text-sm text-gray-500 mt-4 text-center">
               Showing page {currentPage} of {totalPages}. Total items: {totalItems}.
             </p>

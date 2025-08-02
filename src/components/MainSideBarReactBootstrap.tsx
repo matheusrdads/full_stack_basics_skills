@@ -1,34 +1,40 @@
-// src/components/MainSideBar.tsx
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Form, Button } from 'react-bootstrap';
-import { useSearch } from '@/context/SearchContext'; // Import the new hook
+import { useRouter } from 'next/navigation';
 
-const MainSideBar: React.FC = () => {
-  // Use the search context to get the filters state and the handler
-  // We no longer need to manage state locally with `useState`
-  const { filters, handleSearch } = useSearch();
+// Define the props for the sidebar component
+interface MainSideBarProps {
+  onSearch: (filters: { id: string; title: string; body: string }) => void;
+}
+
+const MainSideBar: React.FC<MainSideBarProps> = ({ onSearch }) => {
+  const [filters, setFilters] = useState({
+    id: '',
+    title: '',
+    body: '',
+  });
 
   const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    // Call the shared handler to update the filters in the context
-    handleSearch({
-      ...filters,
+    setFilters(prevFilters => ({
+      ...prevFilters,
       [name]: value,
-    });
+    }));
   };
 
   const handleSearchClick = () => {
-    // The shared handler already updates the state and triggers the search
-    // via the `useEffect` in `PaginationApp`.
-    // We can call it here explicitly to confirm the search action.
-    handleSearch(filters);
+    onSearch(filters);
   };
 
   const handleClearFilters = () => {
-    // Call the shared handler with empty filters to clear everything
-    handleSearch({
+    setFilters({
+      id: '',
+      title: '',
+      body: '',
+    });
+    onSearch({
       id: '',
       title: '',
       body: '',
@@ -45,8 +51,8 @@ const MainSideBar: React.FC = () => {
             type="number"
             placeholder="e.g., 123"
             name="id"
-            value={filters.id} // The value comes from the shared context
-            onChange={handleFilterChange} // The handler updates the shared context
+            value={filters.id}
+            onChange={handleFilterChange}
           />
         </Form.Group>
         <Form.Group className="mb-3" controlId="filterTitle">
@@ -55,8 +61,8 @@ const MainSideBar: React.FC = () => {
             type="text"
             placeholder="e.g., sunt aut"
             name="title"
-            value={filters.title} // The value comes from the shared context
-            onChange={handleFilterChange} // The handler updates the shared context
+            value={filters.title}
+            onChange={handleFilterChange}
           />
         </Form.Group>
         <Form.Group className="mb-3" controlId="filterBody">
@@ -65,15 +71,14 @@ const MainSideBar: React.FC = () => {
             type="text"
             placeholder="e.g., et iusto sed"
             name="body"
-            value={filters.body} // The value comes from the shared context
-            onChange={handleFilterChange} // The handler updates the shared context
+            value={filters.body}
+            onChange={handleFilterChange}
           />
         </Form.Group>
-        {/* The search button still exists */}
+        {/* We can use a search button to trigger the search explicitly */}
         <Button variant="primary" onClick={handleSearchClick} className="w-100 mt-2">
-          Search
+            Search
         </Button>
-        {/* The clear button still exists */}
         <Button variant="secondary" onClick={handleClearFilters} className="w-100 mt-2">
           Clear Filters
         </Button>
